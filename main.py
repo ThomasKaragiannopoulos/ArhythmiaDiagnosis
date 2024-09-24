@@ -10,6 +10,7 @@ subjects = [100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 111, 112, 113, 114
 DataFolderDirectory = os.path.join("Data")
 OriginalSignalDirectory = os.path.join("Data", "OriginalECGs")
 RawDataDirectory = os.path.join("Data","DataV0.h5")
+FilteredDataDirectory = os.path.join("Data","FilteredData.h5")
 
 #Execute Data Preperation
 dp = PrepareData(OriginalSignalDirectory, DataFolderDirectory)
@@ -18,3 +19,4 @@ dp.execute()
 #Plotting Functions Examples
 PlotRawECG(RawDataDirectory, "203")
 PlotRawChannelECG(RawDataDirectory, "107", 0)
+PlotFilteredECG("222", 1, RawDataDirectory, FilteredDataDirectory)

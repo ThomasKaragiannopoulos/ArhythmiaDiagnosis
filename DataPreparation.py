@@ -15,7 +15,7 @@ class PrepareData:
         print("Extracting the Labels From the Original File")
         self.LoadAnnotations(self.RawDataDirectory, self.DataFolderDirectory).ExtractAnnotations()
         print("Applying a Butterworths Bandpass Filter")
-        self.LoadAnnotations(self.RawDataDirectory, self.DataFolderDirectory).ExtractAnnotations()
+        self.FilterData(self.RawDataDirectory, self.DataFolderDirectory).ApplyFilter()
     class LoadData:  
             #Load The Referenced Data
             def __init__(self, RawDataDirectory, DataFolderDirectory):

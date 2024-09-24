@@ -39,3 +39,36 @@ def PlotRawChannelECG(RawDataH5Directory, Subject, Channel):
         plt.show()
         #e.g. PlotRawECG(RawDataDirectory, "107", 0)
 
+
+def PlotFilteredECG(RecordName, Channel, RawDataPath, FilteredDataPath):
+    with h5py.File(RawDataPath, 'r') as raw_file, h5py.File(FilteredDataPath, 'r') as filtered_file:
+        
+        #fetch data
+        filtered_dataset_name = f"Subject_{RecordName}_channel_{Channel}"
+        record = raw_file[RecordName]
+        original_signal = record['pSignal'][:, Channel]
+        filtered_signal = filtered_file[filtered_dataset_name][:]
+        
+        # Plot
+        plt.figure(figsize=(12, 8))
+        
+        # Plot original
+        plt.subplot(2, 1, 1)
+        plt.plot(original_signal, label='Original Signal')
+        plt.title(f'Original ECG Signal - {RecordName} (Channel {Channel})')
+        plt.xlabel('Samples')
+        plt.ylabel('Amplitude')
+        plt.legend()
+        
+        # Plot filtered
+        plt.subplot(2, 1, 2)
+        plt.plot(filtered_signal, label='Filtered Signal', color='orange')
+        plt.title(f'Filtered ECG Signal - {RecordName} (Channel {Channel})')
+        plt.xlabel('Samples')
+        plt.ylabel('Amplitude')
+        plt.legend()
+        
+        #combine
+        plt.tight_layout()
+        plt.show()
+        #e.g. PlotFilteredECG("222", 1, RawDataDirectory, FilteredDataDirectory)
