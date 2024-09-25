@@ -95,4 +95,16 @@ class PrepareData:
                         filtered_data = self.ApplyBandpassFilter(signal[:, idx], MinCut, MaxCut, fs)                        
                         dataset_name = f"Subject_{RecordName}_channel_{idx}"
                         output_hf.create_dataset(dataset_name, data=filtered_data)
+    #Standardizes the data
+    class StandardizeData:
+        #Load The Referenced Data
+        def __init__(self, RawDataDirectory, DataFolderDirectory):
+            self.RawDataDirectory = RawDataDirectory
+            self.DataFolderDirectory = DataFolderDirectory
+        #Standardization
+        def Standardization(self, data):
+            mean = np.mean(data, axis=0)
+            std = np.std(data, axis=0)
+            return (data - mean) / std
+
 
