@@ -16,6 +16,8 @@ class PrepareData:
         self.LoadAnnotations(self.RawDataDirectory, self.DataFolderDirectory).ExtractAnnotations()
         print("Applying a Butterworths Bandpass Filter")
         self.FilterData(self.RawDataDirectory, self.DataFolderDirectory).ApplyFilter()
+        print("Applying a Butterworths Bandpass Filter")
+        self.StandardizeData(self.RawDataDirectory, self.DataFolderDirectory).ApplyStandardization()
     class LoadData:  
             #Load The Referenced Data
             def __init__(self, RawDataDirectory, DataFolderDirectory):
@@ -106,5 +108,14 @@ class PrepareData:
             mean = np.mean(data, axis=0)
             std = np.std(data, axis=0)
             return (data - mean) / std
-
+        def ApplyStandardization(self):
+            StandardizedFileName = os.path.join(self.DataFolderDirectory, "StandardizedData.h5")
+            FilteredDataPath = os.path.join(self.DataFolderDirectory, "FilteredData.h5")
+            #Starting the Loop    
+            with h5py.File(FilteredDataPath, 'r') as Filtered, h5py.File(StandardizedFileName, 'w') as Normalized:
+                for DatasetName in Filtered:
+                    data = Filtered[DatasetName][:]
+                    # Standardize the data
+                    StandardizedData = self.Standardization(data)            
+                    Normalized.create_dataset(DatasetName, data=StandardizedData)
 
