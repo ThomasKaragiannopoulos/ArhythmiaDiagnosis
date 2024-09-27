@@ -118,4 +118,18 @@ class PrepareData:
                     # Standardize the data
                     StandardizedData = self.Standardization(data)            
                     Normalized.create_dataset(DatasetName, data=StandardizedData)
+#Segments the data evenly(Lenght = 500)
+    class SegmentData:
+        def __init__(self, RawDataDirectory, DataFolderDirectory):
+            self.RawDataDirectory  = RawDataDirectory
+            self.DataFolderDirectory = DataFolderDirectory
+        #segments the data
+        def Segmentate(self, signal, NewLength=500):
+            NumOfSegments = len(signal) // NewLength
+            segments = []
+            for i in range(NumOfSegments):
+                segment = signal[i * NewLength:(i + 1) * NewLength]
+                segments.append(segment)
+            return np.array(segments)
 
+    
