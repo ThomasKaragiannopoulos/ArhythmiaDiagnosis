@@ -16,8 +16,11 @@ class PrepareData:
         self.LoadAnnotations(self.RawDataDirectory, self.DataFolderDirectory).ExtractAnnotations()
         print("Applying a Butterworths Bandpass Filter")
         self.FilterData(self.RawDataDirectory, self.DataFolderDirectory).ApplyFilter()
-        print("Applying a Butterworths Bandpass Filter")
+        print("Normalizing Data")
         self.StandardizeData(self.RawDataDirectory, self.DataFolderDirectory).ApplyStandardization()
+        print("Segmenting Signals")
+        self.SegmentData(self.RawDataDirectory, self.DataFolderDirectory).ApplySegmentation()
+        
     class LoadData:  
             #Load The Referenced Data
             def __init__(self, RawDataDirectory, DataFolderDirectory):
@@ -131,5 +134,15 @@ class PrepareData:
                 segment = signal[i * NewLength:(i + 1) * NewLength]
                 segments.append(segment)
             return np.array(segments)
-
+        
+        def ApplySegmentation(self):
+            OutputFile = os.path.join(self.DataFolderDirectory, "SegmentedData.h5")
+            InputFile = os.path.join(self.DataFolderDirectory, "StandardizedData.h5")
+            SegmentLength=500
+            #Start the segmetation loop
+            with h5py.File(InputFile, 'r') as infile, h5py.File(OutputFile, 'w') as outfile:
+                for dataset_name in infile.keys():
+                    data = infile[dataset_name][:]
+                    segmented_data = self.Segmentate(data, NewLength=SegmentLength)
+                    outfile.create_dataset(dataset_name, data=segmented_data)
     
