@@ -145,4 +145,3 @@ class PrepareData:
                     data = infile[dataset_name][:]
                     segmented_data = self.Segmentate(data, NewLength=SegmentLength)
                     outfile.create_dataset(dataset_name, data=segmented_data)
-                    print("trial")
