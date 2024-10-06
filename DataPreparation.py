@@ -145,3 +145,10 @@ class PrepareData:
                     data = infile[dataset_name][:]
                     segmented_data = self.Segmentate(data, NewLength=SegmentLength)
                     outfile.create_dataset(dataset_name, data=segmented_data)
+
+    # Indicates the presence of a label through a binary vector
+    class EncodeLabels:
+        # Load The Referenced Data
+        def __init__(self, RawDataDirectory, DataFolderDirectory):
+            self.RawDataDirectory = RawDataDirectory
+            self.DataFolderDirectory = DataFolderDirectory
