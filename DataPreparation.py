@@ -152,3 +152,78 @@ class PrepareData:
         def __init__(self, RawDataDirectory, DataFolderDirectory):
             self.RawDataDirectory = RawDataDirectory
             self.DataFolderDirectory = DataFolderDirectory
+    # Encoding Labels but grouping all Noises and Artifacts are grouped together
+        def ApplyMLBFilter(self):
+                # Define directories
+                SegmentedDataDirectory = os.path.join(self.DataFolderDirectory, "SegmentedData.h5")
+                AnnotationsDataDirectory = os.path.join(self.DataFolderDirectory, "Annotations.h5")
+
+                # Define possible labels and ignore Q and S
+                PossibleLabels = {
+                    b'N': 'Normal',
+                    b'R': 'Regular',
+                    b'a': 'Atrial',
+                    b'f': 'Fusion',
+                    b'j': 'Junctional',
+                    b'L': 'Lethargy',
+                    b'A': 'Atrial',
+                    b'V': 'Ventricular',
+                    b'E': 'Ventricular',
+                    b'J': 'Junctional',
+                    b'F': 'Fusion',
+                    b'/': 'Paced',
+                    # Group noise and artifacts into a single label
+                    b'Noise': [b'+', b'|', b'~', b'!', b'x', b'[', b']', b'"', b'^', b'e'],
+                    b'S': 'Start',
+                    b'Q': 'Unclassifiable'
+                }
+
+                mlb = MultiLabelBinarizer()
+                mlb.fit([list(PossibleLabels.keys())])
+                OutputDirectory = os.path.join(self.DataFolderDirectory, "EncodedLabels.h5")
+
+                with h5py.File(SegmentedDataDirectory, 'r') as SegmentedFile, \
+                    h5py.File(AnnotationsDataDirectory, 'r') as AnnotationsFile, \
+                    h5py.File(OutputDirectory, 'a') as OutputFile:  # Use 'a' to append or create
+
+                    # Loop for subjects
+                    for subject in AnnotationsFile.keys():
+                        # Create or open the group for the subject
+                        if subject not in OutputFile:
+                            SubjectGroup = OutputFile.create_group(subject)
+                        else:
+                            SubjectGroup = OutputFile[subject]  # If exists, use the existing group
+
+                        # Process only one channel (e.g., channel 0)
+                        channel = 0
+                        ChannelName = f"Subject_{subject}_channel_{channel}"
+                        
+                        if ChannelName in SegmentedFile:
+                            segments = SegmentedFile[ChannelName][:]  
+                            annotations = AnnotationsFile[subject]['AnnotationSymbol'][:]  
+                            annotationSamples = AnnotationsFile[subject]['AnnotationSample'][:]  
+                            labels = []
+
+                            for i in range(len(segments)):
+                                SegmentStart = i * len(segments[0])
+                                SegmentEnd = SegmentStart + len(segments[0])
+
+                                # Find where the annotations are in the segment
+                                indices = np.where((annotationSamples >= SegmentStart) & (annotationSamples < SegmentEnd))[0]
+                                SegmentAnnotations = annotations[indices]
+
+                                # Label Encoding
+                                if SegmentAnnotations.size > 0:
+                                    # Replace noise and artifacts with a single label
+                                    mapped_annotations = [
+                                        b'Noise' if ann in [b'+', b'|', b'~', b'!', b'x', b'[', b']', b'"', b'^', b'e'] else ann
+                                        for ann in SegmentAnnotations
+                                    ]
+                                    EncodedLabels = mlb.transform([mapped_annotations])[0]
+                                else:
+                                    EncodedLabels = np.zeros(len(PossibleLabels))  # No labels present
+                                labels.append(EncodedLabels)
+
+                            # Save segments and labels
+                            SubjectGroup.create_dataset('segments', data=segments)
+                            SubjectGroup.create_dataset('labels', data=np.array(labels))
