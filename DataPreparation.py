@@ -2,6 +2,7 @@ import h5py
 import os
 import wfdb
 import numpy as np
+from sklearn.preprocessing import MultiLabelBinarizer
 from scipy.signal import butter, lfilter
 
 class PrepareData:
